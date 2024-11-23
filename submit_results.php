@@ -15,9 +15,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $matricNumber = $_POST['matricNumber'];
-$courses = isset($_POST['courses']) ? $_POST['courses'] : [];
+$academicYearId = $_POST['academic_year_id'];
+$sessionId = $_POST['session_id'];
+$courses = json_decode($_POST['courses'], true);
 
-if (empty($matricNumber) || empty($courses)) {
+if (empty($matricNumber) || empty($academicYearId) || empty($sessionId) || empty($courses)) {
     echo json_encode(['success' => false, 'message' => 'Invalid data submitted']);
     exit;
 }
@@ -36,18 +38,19 @@ try {
     $results = [
         'student_name' => $student['first_name'] . ' ' . $student['last_name'],
         'matric_number' => $student['matric_number'],
+        'academic_year' => $academicYearId,
+        'session' => $sessionId,
         'courses' => []
     ];
 
     $totalGradePoints = 0;
     $totalCourses = 0;
 
-    foreach ($courses as $courseId => $score) {
-        // Ensure courseId is not null or empty
-        if (empty($courseId)) {
-            continue;
-        }
+    $pdo->beginTransaction();
 
+    $insertStmt = $pdo->prepare("INSERT INTO results (student_id, course_id, score, grade, academic_year_id, session_id) VALUES (?, ?, ?, ?, ?, ?)");
+
+    foreach ($courses as $courseId => $score) {
         $stmt = $pdo->prepare("SELECT course_name, course_code, grade_thresholds FROM courses WHERE id = ?");
         $stmt->execute([$courseId]);
         $course = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -68,6 +71,8 @@ try {
 
             $totalGradePoints += getGradePoint($grade);
             $totalCourses++;
+
+            $insertStmt->execute([$student['id'], $courseId, $score, $grade, $academicYearId, $sessionId]);
         }
     }
 
@@ -75,11 +80,20 @@ try {
     $results['gpa'] = $gpa;
     $results['final_remark'] = getFinalRemark($gpa);
 
+    // Insert or update overall result
+    $overallStmt = $pdo->prepare("INSERT INTO overall_results (student_id, gpa, final_remark, academic_year_id) 
+                                  VALUES (?, ?, ?, ?) 
+                                  ON DUPLICATE KEY UPDATE gpa = ?, final_remark = ?");
+    $overallStmt->execute([$student['id'], $gpa, $results['final_remark'], $academicYearId, $gpa, $results['final_remark']]);
+
+    $pdo->commit();
+
     // Store results in session for confirmation
     $_SESSION['pending_results'] = $results;
 
     echo json_encode(['success' => true, 'results' => $results]);
 } catch (PDOException $e) {
+    $pdo->rollBack();
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
 
@@ -104,4 +118,3 @@ function getFinalRemark($gpa) {
     if ($gpa >= 1.5) return 'Third Class';
     return 'Fail';
 }
-

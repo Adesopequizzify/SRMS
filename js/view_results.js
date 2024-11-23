@@ -1,66 +1,74 @@
 $(document).ready(function() {
-    let currentPage = 1;
-    const resultsPerPage = 10;
+  let currentPage = 1;
+  const resultsPerPage = 10;
 
-    // Load results on page load
-    fetchResults();
+  // Load results on page load
+  fetchResults();
 
-    // Populate courses based on department selection
-    $('#departmentFilter').change(function() {
-        const department = $(this).val();
-        $.ajax({
-            url: 'get_courses.php',
-            method: 'GET',
-            data: { department: department },
-            dataType: 'json',
-            success: function(response) {
-                let options = '<option value="">All Courses</option>';
-                response.courses.forEach(function(course) {
-                    options += `<option value="${course.id}">${course.course_code} - ${course.course_name}</option>`;
-                });
-                $('#courseFilter').html(options);
-                fetchResults(); // Fetch results after updating courses
-            },
-            error: function(xhr, status, error) {
-                showNotification('Error fetching courses: ' + error, false);
-            }
+  // Populate courses based on department selection
+  $('#departmentFilter').change(function() {
+    const department = $(this).val();
+    $.ajax({
+      url: 'get_courses.php',
+      method: 'GET',
+      data: {
+        department: department,
+        academic_year_id: $('#academicYearFilter').val(),
+        session_id: $('#sessionFilter').val()
+      },
+      dataType: 'json',
+      success: function(response) {
+        let options = '<option value="">All Courses</option>';
+        response.courses.forEach(function(course) {
+          options += `<option value="${course.id}">${course.course_code} - ${course.course_name}</option>`;
         });
+        $('#courseFilter').html(options);
+        fetchResults(); // Fetch results after updating courses
+      },
+      error: function(xhr, status, error) {
+        showNotification('Error fetching courses: ' + error, false);
+      }
     });
+  });
 
-    // Fetch results when course filter changes
-    $('#courseFilter').change(fetchResults);
+  // Fetch results when filters change
+  $('#courseFilter, #academicYearFilter, #sessionFilter').change(fetchResults);
 
-    // Implement real-time search for matric number
-    $('#matricSearch').on('input', debounce(fetchResults, 300));
+  // Implement real-time search for matric number
+  $('#matricSearch').on('input', debounce(fetchResults, 300));
 
-    function fetchResults() {
-        const department = $('#departmentFilter').val();
-        const courseId = $('#courseFilter').val();
-        const matricNumber = $('#matricSearch').val();
+  function fetchResults() {
+    const department = $('#departmentFilter').val();
+    const courseId = $('#courseFilter').val();
+    const matricNumber = $('#matricSearch').val();
+    const academicYearId = $('#academicYearFilter').val();
+    const sessionId = $('#sessionFilter').val();
 
-        $.ajax({
-            url: 'get_filtered_results.php',
-            method: 'GET',
-            data: {
-                department: department,
-                course_id: courseId,
-                matric_number: matricNumber,
-                page: currentPage,
-                per_page: resultsPerPage
-            },
-            dataType: 'json',
-            success: function(response) {
-                displayResults(response.results);
-                updatePagination(response.total_pages);
-            },
-            error: function(xhr, status, error) {
-                showNotification('Error fetching results: ' + error, false);
-            }
-        });
-    }
+    $.ajax({
+      url: 'get_filtered_results.php',
+      method: 'GET',
+      data: {
+        department: department,
+        course_id: courseId,
+        matric_number: matricNumber,
+        academic_year_id: academicYearId,
+        session_id: sessionId,
+        page: currentPage,
+        per_page: resultsPerPage
+      },
+      dataType: 'json',
+      success: function(response) {
+        displayResults(response.results);
+        updatePagination(response.total_pages);
+      },
+      error: function(xhr, status, error) {
+        showNotification('Error fetching results: ' + error, false);
+      }
+    });
+  }
 
-    function displayResults(results) {
-        let tableHtml = `
+  function displayResults(results) {
+    let tableHtml = `
             <table class="table table-striped">
                 <thead>
                     <tr>
@@ -76,8 +84,8 @@ $(document).ready(function() {
                 <tbody>
         `;
 
-        results.forEach(function(result, index) {
-            tableHtml += `
+    results.forEach(function(result, index) {
+      tableHtml += `
                 <tr>
                     <td>${(currentPage - 1) * resultsPerPage + index + 1}</td>
                     <td>${result.first_name} ${result.last_name}</td>
@@ -88,53 +96,61 @@ $(document).ready(function() {
                     <td><button class="btn btn-sm btn-info view-details" data-student-id="${result.id}">View Details</button></td>
                 </tr>
             `;
-        });
+    });
 
-        tableHtml += '</tbody></table>';
-        $('#resultsTable').html(tableHtml);
-    }
+    tableHtml += '</tbody></table>';
+    $('#resultsTable').html(tableHtml);
+  }
 
-    function updatePagination(totalPages) {
-        let paginationHtml = '';
-        for (let i = 1; i <= totalPages; i++) {
-            paginationHtml += `
+  function updatePagination(totalPages) {
+    let paginationHtml = '';
+    for (let i = 1; i <= totalPages; i++) {
+      paginationHtml += `
                 <li class="page-item ${i === currentPage ? 'active' : ''}">
                     <a class="page-link" href="#" data-page="${i}">${i}</a>
                 </li>
             `;
-        }
-        $('#pagination').html(paginationHtml);
     }
+    $('#pagination').html(paginationHtml);
+  }
 
-    // Pagination click event
-    $(document).on('click', '.page-link', function(e) {
-        e.preventDefault();
-        currentPage = parseInt($(this).data('page'));
-        fetchResults();
+  // Pagination click event
+  $(document).on('click', '.page-link', function(e) {
+    e.preventDefault();
+    currentPage = parseInt($(this).data('page'));
+    fetchResults();
+  });
+
+  // View student details
+  $(document).on('click', '.view-details', function() {
+    const studentId = $(this).data('student-id');
+    const academicYearId = $('#academicYearFilter').val();
+    const sessionId = $('#sessionFilter').val();
+    $.ajax({
+      url: 'get_student_details.php',
+      method: 'GET',
+      data: {
+        student_id: studentId,
+        academic_year_id: academicYearId,
+        session_id: sessionId
+      },
+      dataType: 'json',
+      success: function(response) {
+        displayStudentDetails(response.details);
+      },
+      error: function(xhr, status, error) {
+        showNotification('Error fetching student details: ' + error, false);
+      }
     });
+  });
 
-    // View student details
-    $(document).on('click', '.view-details', function() {
-        const studentId = $(this).data('student-id');
-        $.ajax({
-            url: 'get_student_details.php',
-            method: 'GET',
-            data: { student_id: studentId },
-            dataType: 'json',
-            success: function(response) {
-                displayStudentDetails(response.details);
-            },
-            error: function(xhr, status, error) {
-                showNotification('Error fetching student details: ' + error, false);
-            }
-        });
-    });
-
-    function displayStudentDetails(details) {
-        let detailsHtml = `
+  function displayStudentDetails(details) {
+    let detailsHtml = `
             <h4>${details.first_name} ${details.last_name}</h4>
             <p><strong>Matric Number:</strong> ${details.matric_number}</p>
             <p><strong>Department:</strong> ${details.department}</p>
+            <p><strong>Academic Year:</strong> ${details.academic_year}</p>
+            <p><strong>Session:</strong> ${details.session}</p>
             <p><strong>Overall GPA:</strong> ${details.gpa !== null ? details.gpa.toFixed(2) : 'N/A'}</p>
             <p><strong>Final Remark:</strong> ${details.final_remark !== null ? details.final_remark : 'N/A'}</p>
             <h5>Course Results:</h5>
@@ -150,8 +166,8 @@ $(document).ready(function() {
                 <tbody>
         `;
 
-        details.courses.forEach(function(course) {
-            detailsHtml += `
+    details.courses.forEach(function(course) {
+      detailsHtml += `
                 <tr>
                     <td>${course.course_code}</td>
                     <td>${course.course_name}</td>
@@ -159,35 +175,84 @@ $(document).ready(function() {
                     <td>${course.grade}</td>
                 </tr>
             `;
-        });
+    });
 
-        detailsHtml += '</tbody></table>';
-        $('#studentDetailsContent').html(detailsHtml);
-        $('#studentDetailsModal').modal('show');
-    }
+    detailsHtml += '</tbody></table>';
+    $('#studentDetailsContent').html(detailsHtml);
+    $('#studentDetailsModal').modal('show');
+  }
 
-    function showNotification(message, success) {
-        const popup = $('#customPopup');
-        popup.removeClass('success error').addClass(success ? 'success' : 'error');
-        popup.find('.custom-popup-message').text(message);
-        popup.fadeIn(300);
+  function showNotification(message, success) {
+    const popup = $('#customPopup');
+    popup.removeClass('success error').addClass(success ? 'success' : 'error');
+    popup.find('.custom-popup-message').text(message);
+    popup.fadeIn(300);
 
-        setTimeout(() => {
-            popup.fadeOut(300);
-        }, 5000);
-    }
+    setTimeout(() => {
+      popup.fadeOut(300);
+    }, 5000);
+  }
 
-    // Debounce function to limit the rate at which a function can fire
-    function debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
+  // Debounce function to limit the rate at which a function can fire
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  // Load Academic Years
+  function loadAcademicYears() {
+    $.ajax({
+      url: 'get_academic_years.php',
+      method: 'GET',
+      dataType: 'json',
+      success: function(response) {
+        if (response.success) {
+          let options = '<option value="">All Academic Years</option>';
+          response.academic_years.forEach(function(year) {
+            options += `<option value="${year.id}">${year.year}</option>`;
+          });
+          $('#academicYearFilter').html(options);
+        } else {
+          showNotification(response.message, false);
+        }
+      },
+      error: function(xhr, status, error) {
+        showNotification('An error occurred while loading academic years: ' + error, false);
+      }
+    });
+  }
+
+  // Load Sessions
+  function loadSessions() {
+    $.ajax({
+      url: 'get_sessions.php',
+      method: 'GET',
+      dataType: 'json',
+      success: function(response) {
+        if (response.success) {
+          let options = '<option value="">All Sessions</option>';
+          response.sessions.forEach(function(session) {
+            options += `<option value="${session.id}">${session.name}</option>`;
+          });
+          $('#sessionFilter').html(options);
+        } else {
+          showNotification(response.message, false);
+        }
+      },
+      error: function(xhr, status, error) {
+        showNotification('An error occurred while loading sessions: ' + error, false);
+      }
+    });
+  }
+
+  // Initial load of academic years and sessions
+  loadAcademicYears();
+  loadSessions();
 });
-

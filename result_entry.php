@@ -6,6 +6,14 @@ if (!isset($_SESSION['admin_id'])) {
     header('Location: index.php');
     exit();
 }
+
+// Fetch academic years
+$stmt = $pdo->query("SELECT * FROM academic_years ORDER BY year DESC");
+$academicYears = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch sessions
+$stmt = $pdo->query("SELECT * FROM sessions ORDER BY name");
+$sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -103,6 +111,28 @@ if (!isset($_SESSION['admin_id'])) {
                                             <label for="studentName" class="form-label">Student Name</label>
                                             <input type="text" class="form-control" id="studentName" readonly>
                                         </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="academicYear" class="form-label">Academic Year</label>
+                                        <select class="form-select" id="academicYear" name="academicYear" required>
+                                            <option value="">Select Academic Year</option>
+                                            <?php foreach ($academicYears as $year): ?>
+                                                <option value="<?php echo htmlspecialchars($year['id']); ?>">
+                                                    <?php echo htmlspecialchars($year['year']); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="session" class="form-label">Session</label>
+                                        <select class="form-select" id="session" name="session" required>
+                                            <option value="">Select Session</option>
+                                            <?php foreach ($sessions as $session): ?>
+                                                <option value="<?php echo htmlspecialchars($session['id']); ?>">
+                                                    <?php echo htmlspecialchars($session['name']); ?>
+                                                </option>
+                                            <?php endforeach; ?>
+                                        </select>
                                     </div>
                                     <div id="courseResults" style="display: none;">
                                         <!-- Course results will be dynamically added here -->

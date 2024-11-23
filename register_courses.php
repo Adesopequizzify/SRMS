@@ -12,10 +12,12 @@ if (!isset($_SESSION['admin_id'])) {
 }
 
 $studentId = isset($_POST['studentId']) ? intval($_POST['studentId']) : 0;
+$academicYearId = isset($_POST['academicYearId']) ? intval($_POST['academicYearId']) : 0;
+$sessionId = isset($_POST['sessionId']) ? intval($_POST['sessionId']) : 0;
 $courses = isset($_POST['courses']) ? json_decode($_POST['courses'], true) : [];
 
-if ($studentId <= 0) {
-    echo json_encode(['success' => false, 'message' => 'Invalid student ID']);
+if ($studentId <= 0 || $academicYearId <= 0 || $sessionId <= 0) {
+    echo json_encode(['success' => false, 'message' => 'Invalid student ID, academic year, or session']);
     exit;
 }
 
@@ -37,14 +39,14 @@ try {
         throw new Exception('Student not found');
     }
 
-    // Delete existing registrations
-    $stmt = $pdo->prepare("DELETE FROM course_registrations WHERE student_id = ?");
-    $stmt->execute([$studentId]);
+    // Delete existing registrations for the specific academic year and session
+    $stmt = $pdo->prepare("DELETE FROM course_registrations WHERE student_id = ? AND academic_year_id = ? AND session_id = ?");
+    $stmt->execute([$studentId, $academicYearId, $sessionId]);
 
     // Insert new registrations
-    $stmt = $pdo->prepare("INSERT INTO course_registrations (student_id, course_id) VALUES (?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO course_registrations (student_id, course_id, academic_year_id, session_id) VALUES (?, ?, ?, ?)");
     foreach ($courses as $courseId) {
-        $stmt->execute([$studentId, $courseId]);
+        $stmt->execute([$studentId, $courseId, $academicYearId, $sessionId]);
     }
 
     $pdo->commit();
@@ -56,4 +58,3 @@ try {
     error_log('Error in course registration: ' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Error registering courses: ' . $e->getMessage()]);
 }
-

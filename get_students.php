@@ -9,8 +9,23 @@ if (!isset($_SESSION['admin_id'])) {
     exit();
 }
 
+$academicYearId = isset($_GET['academic_year_id']) ? intval($_GET['academic_year_id']) : null;
+
 try {
-    $stmt = $pdo->query("SELECT * FROM students ORDER BY created_at DESC");
+    $query = "SELECT DISTINCT s.* FROM students s
+              LEFT JOIN course_registrations cr ON s.id = cr.student_id";
+    
+    $params = [];
+    
+    if ($academicYearId) {
+        $query .= " WHERE cr.academic_year_id = ?";
+        $params[] = $academicYearId;
+    }
+    
+    $query .= " ORDER BY s.created_at DESC";
+    
+    $stmt = $pdo->prepare($query);
+    $stmt->execute($params);
     $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode(['success' => true, 'students' => $students]);
