@@ -27,42 +27,40 @@ $(document).ready(function() {
     });
   });
 
-  // Load Courses Function
-  function loadCourses() {
-    $.ajax({
-      url: 'get_courses.php',
-      method: 'GET',
-      dataType: 'json',
-      success: function(response) {
-        if (response.success) {
-          let courseHtml = '';
-          if (Object.keys(response.courses).length === 0) {
-            courseHtml = '<p>No courses found</p>';
-          } else {
-            for (let department in response.courses) {
-              courseHtml += `<h6>${department}</h6><ul>`;
-              response.courses[department].forEach(function(course) {
-                courseHtml += `
-                  <li>
-                    ${course.course_code} - ${course.course_name}
-                    <br>
-                    <small>Academic Year: ${course.academic_year}, Session: ${course.session}</small>
-                  </li>`;
-              });
-              courseHtml += '</ul>';
-            }
-          }
-          $('#courseList').html(courseHtml);
+function loadCourses() {
+  $.ajax({
+    url: 'get_courses.php',
+    method: 'GET',
+    dataType: 'json',
+    success: function(response) {
+      if (response.success) {
+        let courseHtml = '';
+        if (Object.keys(response.courses).length === 0) {
+          courseHtml = '<p>No courses found</p>';
         } else {
-          showNotification(response.message, false);
+          for (let department in response.courses) {
+            courseHtml += `<h6>${department}</h6><ul>`;
+            response.courses[department].forEach(function(course) {
+              courseHtml += `
+                <li>
+                  ${course.course_code} - ${course.course_name}
+                  <br>
+                  <small>Academic Year: ${course.academic_year || 'N/A'}, Session: ${course.session || 'N/A'}</small>
+                </li>`;
+            });
+            courseHtml += '</ul>';
+          }
         }
-      },
-      error: function(xhr, status, error) {
-        showNotification('An error occurred while loading courses: ' + error, false);
+        $('#courseList').html(courseHtml);
+      } else {
+        showNotification(response.message, false);
       }
-    });
-  }
-
+    },
+    error: function(xhr, status, error) {
+      showNotification('An error occurred while loading courses: ' + error, false);
+    }
+  });
+}
   // Load Academic Years
   function loadAcademicYears() {
     $.ajax({

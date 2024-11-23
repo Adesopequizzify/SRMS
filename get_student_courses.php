@@ -9,32 +9,41 @@ if (!isset($_SESSION['admin_id'])) {
     exit;
 }
 
-$department = isset($_GET['department']) ? $_GET['department'] : '';
+$matricNumber = isset($_GET['matricNumber']) ? $_GET['matricNumber'] : '';
 $academicYearId = isset($_GET['academic_year_id']) ? intval($_GET['academic_year_id']) : 0;
 $sessionId = isset($_GET['session_id']) ? intval($_GET['session_id']) : 0;
 
-if (empty($department) || $academicYearId <= 0 || $sessionId <= 0) {
+if (empty($matricNumber) || $academicYearId <= 0 || $sessionId <= 0) {
     echo json_encode(['success' => false, 'message' => 'Invalid parameters']);
     exit;
 }
 
 try {
+    // Get student information
+    $stmt = $pdo->prepare("SELECT id, first_name, last_name FROM students WHERE matric_number = ?");
+    $stmt->execute([$matricNumber]);
+    $student = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$student) {
+        echo json_encode(['success' => false, 'message' => 'Student not found']);
+        exit;
+    }
+
+    // Get student courses
     $stmt = $pdo->prepare("
-        SELECT c.id, c.course_code, c.course_name 
+        SELECT c.id, c.course_code, c.course_name, c.grade_thresholds
         FROM courses c
-        JOIN course_offerings co ON c.id = co.course_id
-        WHERE c.department = ? AND co.academic_year_id = ? AND co.session_id = ?
-        ORDER BY c.course_code
+        JOIN course_registrations cr ON c.id = cr.course_id
+        WHERE cr.student_id = ? AND cr.academic_year_id = ? AND cr.session_id = ?
     ");
-    $stmt->execute([$department, $academicYearId, $sessionId]);
+    $stmt->execute([$student['id'], $academicYearId, $sessionId]);
     $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    if (empty($courses)) {
-        echo json_encode(['success' => false, 'message' => 'No courses found for the selected criteria']);
-    } else {
-        echo json_encode(['success' => true, 'courses' => $courses]);
-    }
+    echo json_encode([
+        'success' => true,
+        'student' => $student,
+        'courses' => $courses
+    ]);
 } catch (PDOException $e) {
-    error_log('Database error: ' . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Error fetching courses: ' . $e->getMessage()]);
+    echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
