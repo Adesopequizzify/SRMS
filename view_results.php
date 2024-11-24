@@ -29,25 +29,25 @@ if (!isset($_SESSION['admin_id'])) {
 
     <div class="wrapper">
         <!-- Sidebar -->
-        <nav id="sidebar">
+         <nav id="sidebar">
             <div class="sidebar-header">
                 <h3>LUFEM School</h3>
             </div>
 
             <ul class="list-unstyled components">
-                <li>
-                    <a href="admin_dashboard.php">
+                <li class="active">
+                    <a href="/admin_dashboard.php" data-page="">
                         <i class="bi bi-speedometer2"></i> Dashboard
                     </a>
                 </li>
                 <li>
-                    <a href="admin_dashboard.php#add-student">
-                        <i class="bi bi-person-plus"></i> Add Student
+                    <a href="admin_dashboard.php#add-student" data-page="">
+                        <i class="bi bi-person-plus"></i> Insert New Student
                     </a>
                 </li>
                 <li>
-                    <a href="admin_dashboard.php#student-list">
-                        <i class="bi bi-people"></i> Student List
+                    <a href="#" data-page="student-list">
+                        <i class="bi bi-people"></i> Registered Students 
                     </a>
                 </li>
                 <li>
@@ -56,16 +56,16 @@ if (!isset($_SESSION['admin_id'])) {
                     </a>
                 </li>
                 <li>
-                    <a href="student_course_registration.php">
-                        <i class="bi bi-pencil-square"></i> Student Course Registration
-                    </a>
-                </li>
+    <a href="student_course_registration.php">
+        <i class="bi bi-pencil-square"></i> Student Course Registration
+    </a>
+</li>
                 <li>
-                    <a href="result_entry.php">
-                        <i class="bi bi-file-earmark-text"></i> Result Entry
-                    </a>
-                </li>
-                <li class="active">
+    <a href="result_entry.php">
+        <i class="bi bi-pencil-square"></i> Insert New Result
+    </a>
+</li>
+<li class="active">
                     <a href="view_results.php">
                         <i class="bi bi-table"></i> View Results
                     </a>
