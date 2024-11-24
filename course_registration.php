@@ -44,7 +44,7 @@ $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             <ul class="list-unstyled components">
                 <li class="active">
-                    <a href="#" data-page="dashboard">
+                    <a href="admin_dashboard.php" data-page="dashboard">
                         <i class="bi bi-speedometer2"></i> Dashboard
                     </a>
                 </li>

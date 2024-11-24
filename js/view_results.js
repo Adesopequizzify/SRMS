@@ -126,6 +126,7 @@ $(document).ready(function() {
     const studentId = $(this).data('student-id');
     const academicYearId = $('#academicYearFilter').val();
     const sessionId = $('#sessionFilter').val();
+    console.log('View details clicked for student ID:', studentId); // Debug log
     $.ajax({
       url: 'get_student_details.php',
       method: 'GET',
@@ -136,23 +137,30 @@ $(document).ready(function() {
       },
       dataType: 'json',
       success: function(response) {
-        displayStudentDetails(response.details);
+        console.log('Student details response:', response); // Debug log
+        if (response.success) {
+          displayStudentDetails(response.details);
+        } else {
+          showNotification(response.message || 'Error fetching student details', false);
+        }
       },
       error: function(xhr, status, error) {
+        console.error('Error fetching student details:', error); // Debug log
         showNotification('Error fetching student details: ' + error, false);
       }
     });
   });
 
   function displayStudentDetails(details) {
+    console.log('Displaying student details:', details); // Debug log
     let detailsHtml = `
             <h4>${details.first_name} ${details.last_name}</h4>
             <p><strong>Matric Number:</strong> ${details.matric_number}</p>
             <p><strong>Department:</strong> ${details.department}</p>
-            <p><strong>Academic Year:</strong> ${details.academic_year}</p>
-            <p><strong>Session:</strong> ${details.session}</p>
+            <p><strong>Academic Year:</strong> ${details.academic_year || 'N/A'}</p>
+            <p><strong>Session:</strong> ${details.session || 'N/A'}</p>
             <p><strong>Overall GPA:</strong> ${details.gpa !== null ? details.gpa.toFixed(2) : 'N/A'}</p>
-            <p><strong>Final Remark:</strong> ${details.final_remark !== null ? details.final_remark : 'N/A'}</p>
+            <p><strong>Final Remark:</strong> ${details.final_remark || 'N/A'}</p>
             <h5>Course Results:</h5>
             <table class="table table-striped">
                 <thead>
@@ -166,8 +174,9 @@ $(document).ready(function() {
                 <tbody>
         `;
 
-    details.courses.forEach(function(course) {
-      detailsHtml += `
+    if (details.courses && details.courses.length > 0) {
+      details.courses.forEach(function(course) {
+        detailsHtml += `
                 <tr>
                     <td>${course.course_code}</td>
                     <td>${course.course_name}</td>
@@ -175,7 +184,10 @@ $(document).ready(function() {
                     <td>${course.grade}</td>
                 </tr>
             `;
-    });
+      });
+    } else {
+      detailsHtml += '<tr><td colspan="4">No course results found</td></tr>';
+    }
 
     detailsHtml += '</tbody></table>';
     $('#studentDetailsContent').html(detailsHtml);
@@ -256,3 +268,4 @@ $(document).ready(function() {
   loadAcademicYears();
   loadSessions();
 });
+
