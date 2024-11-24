@@ -50,12 +50,12 @@ $totalCourses = $stmt->fetchColumn();
                 </li>
                 <li>
                     <a href="#" data-page="add-student">
-                        <i class="bi bi-person-plus"></i> Add Student
+                        <i class="bi bi-person-plus"></i> Add New Student
                     </a>
                 </li>
                 <li>
                     <a href="#" data-page="student-list">
-                        <i class="bi bi-people"></i> Student List
+                        <i class="bi bi-people"></i> Registered Students
                     </a>
                 </li>
                 <li>
@@ -70,7 +70,7 @@ $totalCourses = $stmt->fetchColumn();
 </li>
                 <li>
     <a href="result_entry.php">
-        <i class="bi bi-pencil-square"></i> Result Entry
+        <i class="bi bi-pencil-square"></i> Insert New Result
     </a>
 </li>
 <li class="active">
