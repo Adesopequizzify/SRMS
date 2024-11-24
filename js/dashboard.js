@@ -25,7 +25,7 @@ $(document).ready(function() {
       case 'course-registration':
         loadCourses();
         break;
-      case 'result-entry':
+      case 'Insert New Result':
         loadAcademicYears();
         loadSessions();
         break;

@@ -40,16 +40,16 @@ if (!isset($_SESSION['admin_id'])) {
                         <i class="bi bi-speedometer2"></i> Dashboard
                     </a>
                 </li>
-                <li>
-                    <a href="admin_dashboard.php#add-student" data-page="">
-                        <i class="bi bi-person-plus"></i> Insert New Student
-                    </a>
-                </li>
-                <li>
-                    <a href="#" data-page="student-list">
-                        <i class="bi bi-people"></i> Registered Students 
-                    </a>
-                </li>
+              <li>
+    <a href="admin_dashboard.php?page=add-student">
+        <i class="bi bi-person-plus"></i> Register New Student
+    </a>
+</li>
+<li>
+    <a href="admin_dashboard.php?page=student-list">
+        <i class="bi bi-people"></i> Registered Students
+    </a>
+</li>
                 <li>
                     <a href="course_registration.php">
                         <i class="bi bi-book"></i> Course Registration

@@ -44,27 +44,28 @@ $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
 
             <ul class="list-unstyled components">
-                <li class="active">
+                <li class="">
                     <a href="/admin_dashboard.php" data-page="">
                         <i class="bi bi-speedometer2"></i> Dashboard
                     </a>
                 </li>
                 <li>
-                    <a href="admin_dashboard.php#add-student" data-page="">
-                        <i class="bi bi-person-plus"></i> Insert New Student
-                    </a>
-                </li>
-                <li>
-                    <a href="#" data-page="student-list">
-                        <i class="bi bi-people"></i> Registered Students 
-                    </a>
-                </li>
+<li>
+    <a href="admin_dashboard.php?page=add-student">
+        <i class="bi bi-person-plus"></i> Register New Student
+    </a>
+</li>
+<li>
+    <a href="admin_dashboard.php?page=student-list">
+        <i class="bi bi-people"></i> Registered Students
+    </a>
+</li>
                 <li>
                     <a href="course_registration.php">
                         <i class="bi bi-book"></i> Course Registration
                     </a>
                 </li>
-                <li>
+                <li class="active">
     <a href="student_course_registration.php">
         <i class="bi bi-pencil-square"></i> Student Course Registration
     </a>
@@ -74,7 +75,7 @@ $sessions = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <i class="bi bi-pencil-square"></i> Insert New Result
     </a>
 </li>
-<li class="active">
+<li class="">
                     <a href="view_results.php">
                         <i class="bi bi-table"></i> View Results
                     </a>
