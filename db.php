@@ -1,7 +1,7 @@
 <?php
 // db.php
 $host = 'localhost';
-$dbname = 'lufem_school';
+$dbname = 'lf';
 $username = 'root';
 $password = '';
 

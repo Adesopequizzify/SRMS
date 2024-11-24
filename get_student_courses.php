@@ -20,7 +20,7 @@ if (empty($matricNumber) || $academicYearId <= 0 || $sessionId <= 0) {
 
 try {
     // Get student information
-    $stmt = $pdo->prepare("SELECT id, first_name, last_name FROM students WHERE matric_number = ?");
+    $stmt = $pdo->prepare("SELECT id FROM students WHERE matric_number = ?");
     $stmt->execute([$matricNumber]);
     $student = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -39,11 +39,16 @@ try {
     $stmt->execute([$student['id'], $academicYearId, $sessionId]);
     $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Decode grade thresholds JSON
+    foreach ($courses as &$course) {
+        $course['grade_thresholds'] = json_decode($course['grade_thresholds'], true);
+    }
+
     echo json_encode([
         'success' => true,
-        'student' => $student,
         'courses' => $courses
     ]);
 } catch (PDOException $e) {
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
 }
+

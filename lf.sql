@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Nov 23, 2024 at 06:01 AM
+-- Generation Time: Nov 24, 2024 at 08:03 AM
 -- Server version: 5.7.34
 -- PHP Version: 8.2.6
 
@@ -18,8 +18,33 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Database: `lufem_school`
+-- Database: `lf`
 --
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `academic_years`
+--
+
+CREATE TABLE `academic_years` (
+  `id` int(11) NOT NULL,
+  `year` varchar(9) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+--
+-- Dumping data for table `academic_years`
+--
+
+INSERT INTO `academic_years` (`id`, `year`, `created_at`) VALUES
+(1, '2023-2024', '2024-11-24 06:06:33'),
+(2, '2024-2025', '2024-11-24 06:06:33'),
+(3, '2025-2026', '2024-11-24 06:06:33'),
+(4, '2026-2027', '2024-11-24 06:06:33'),
+(5, '2027-2028', '2024-11-24 06:06:33'),
+(6, '2028-2029', '2024-11-24 06:06:33'),
+(7, '2029-2030', '2024-11-24 06:06:33');
 
 -- --------------------------------------------------------
 
@@ -39,8 +64,7 @@ CREATE TABLE `admins` (
 --
 
 INSERT INTO `admins` (`id`, `username`, `password`, `created_at`) VALUES
-(1, 'admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '2024-11-21 09:10:14'),
-(2, 'muiz.dev.io@gmail.com', '$2y$10$GlFS9baWhOzF8QT3Z6teZ.GS8BPV3aiJIOoJrOq7CnCc9APi7O3oO', '2024-11-21 09:11:31');
+(1, 'muiz.dev.io@gmail.com', '$2y$10$0jVlU7EMOglusi5YKBrAauqkbUJiRQ/QcVcy9YQ1vtVSKjt1ykAqS', '2024-11-24 06:03:07');
 
 -- --------------------------------------------------------
 
@@ -62,11 +86,7 @@ CREATE TABLE `courses` (
 --
 
 INSERT INTO `courses` (`id`, `course_name`, `course_code`, `department`, `created_at`, `grade_thresholds`) VALUES
-(6, 'Mechanical measurement', 'MEC112', 'Software Engineering', '2024-11-21 21:40:16', '{\"A\": 70, \"B\": 60, \"C\": 50, \"D\": 40, \"E\": 30, \"F\": 20}'),
-(5, 'Engineering measurements', 'Mec 11', 'Business Informatics', '2024-11-21 21:39:27', '{\"A\": 70, \"B\": 60, \"C\": 50, \"D\": 40, \"E\": 30, \"F\": 20}'),
-(4, 'Mechanical engineering measurement', 'CTE 112', 'Business Informatics', '2024-11-21 21:38:17', '{\"A\": 70, \"B\": 60, \"C\": 50, \"D\": 40, \"E\": 30, \"F\": 20}'),
-(7, 'Engineering measurements t', 'Nmr', 'Business Informatics', '2024-11-22 19:33:40', '{\"A\": 70, \"B\": 60, \"C\": 50, \"D\": 40, \"E\": 30, \"F\": 20}'),
-(8, 'Jdub', 'Nmryu', 'Multimedia Technology', '2024-11-22 19:38:04', '{\"A\": 70, \"B\": 60, \"C\": 50, \"D\": 40, \"E\": 30, \"F\": 20}');
+(1, 'Mechanical engineering measurement', 'Mec 11', 'Business Informatics', '2024-11-24 06:07:24', '{\"A\": 90, \"B\": 70, \"C\": 60, \"D\": 50, \"E\": 40, \"F\": 30}');
 
 -- --------------------------------------------------------
 
@@ -78,18 +98,18 @@ CREATE TABLE `course_registrations` (
   `id` int(11) NOT NULL,
   `student_id` int(11) NOT NULL,
   `course_id` int(11) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `academic_year_id` int(11) NOT NULL,
+  `session_id` int(11) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `course_registrations`
 --
 
-INSERT INTO `course_registrations` (`id`, `student_id`, `course_id`, `created_at`) VALUES
-(1, 3, 6, '2024-11-22 20:11:09'),
-(2, 7, 5, '2024-11-23 03:51:11'),
-(3, 7, 4, '2024-11-23 03:51:11'),
-(4, 7, 7, '2024-11-23 03:51:11');
+INSERT INTO `course_registrations` (`id`, `student_id`, `course_id`, `created_at`, `academic_year_id`, `session_id`) VALUES
+(1, 1, 1, '2024-11-24 06:11:00', 1, 1),
+(2, 2, 1, '2024-11-24 06:20:00', 1, 1);
 
 -- --------------------------------------------------------
 
@@ -102,16 +122,16 @@ CREATE TABLE `overall_results` (
   `student_id` int(11) NOT NULL,
   `gpa` float NOT NULL,
   `final_remark` varchar(50) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `academic_year_id` int(11) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `overall_results`
 --
 
-INSERT INTO `overall_results` (`id`, `student_id`, `gpa`, `final_remark`, `created_at`) VALUES
-(1, 3, 0, 'Fail', '2024-11-23 04:33:53'),
-(2, 7, 1.67, 'Third Class', '2024-11-23 04:34:40');
+INSERT INTO `overall_results` (`id`, `student_id`, `gpa`, `final_remark`, `created_at`, `academic_year_id`) VALUES
+(1, 2, 4, 'Distinction', '2024-11-24 06:20:15', 1);
 
 -- --------------------------------------------------------
 
@@ -125,18 +145,38 @@ CREATE TABLE `results` (
   `course_id` int(11) NOT NULL,
   `score` float NOT NULL,
   `grade` char(1) NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `academic_year_id` int(11) NOT NULL,
+  `session_id` int(11) NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
 
 --
 -- Dumping data for table `results`
 --
 
-INSERT INTO `results` (`id`, `student_id`, `course_id`, `score`, `grade`, `created_at`) VALUES
-(1, 3, 6, 3, 'F', '2024-11-23 04:33:53'),
-(2, 7, 4, 36, 'E', '2024-11-23 04:34:40'),
-(3, 7, 5, 39, 'E', '2024-11-23 04:34:40'),
-(4, 7, 7, 58, 'C', '2024-11-23 04:34:40');
+INSERT INTO `results` (`id`, `student_id`, `course_id`, `score`, `grade`, `created_at`, `academic_year_id`, `session_id`) VALUES
+(2, 1, 1, 90, 'A', '2024-11-24 06:12:29', 1, 1),
+(3, 2, 1, 90, 'A', '2024-11-24 06:20:15', 1, 1);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sessions`
+--
+
+CREATE TABLE `sessions` (
+  `id` int(11) NOT NULL,
+  `name` varchar(50) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+
+--
+-- Dumping data for table `sessions`
+--
+
+INSERT INTO `sessions` (`id`, `name`, `created_at`) VALUES
+(1, 'First Semester', '2024-11-24 06:06:33'),
+(2, 'Second Semester', '2024-11-24 06:06:33');
 
 -- --------------------------------------------------------
 
@@ -159,15 +199,18 @@ CREATE TABLE `students` (
 --
 
 INSERT INTO `students` (`id`, `first_name`, `last_name`, `gender`, `matric_number`, `department`, `created_at`) VALUES
-(4, 'Hello', 'Muiz', 'Female', 'Hisbsb7262', 'Software Engineering', '2024-11-22 19:34:45'),
-(3, 'Adesope', 'Muiz', 'Female', 'F/ND/23/3450051', 'Software Engineering', '2024-11-21 21:37:46'),
-(5, 'Hello', 'Adesope', 'Male', '63638383gs', 'Multimedia Technology', '2024-11-22 19:38:29'),
-(6, 'Fenee', 'Holla', 'Female', 'F/ND/23/3450054', 'Software Engineering', '2024-11-23 03:48:45'),
-(7, 'Gehtude', 'Mary', 'Female', 'F/ND/23/3450055', 'Business Informatics', '2024-11-23 03:50:39');
+(1, 'Fenee', 'Adesope', 'Male', 'F/ND/23/3450055', 'Business Informatics', '2024-11-24 06:03:48'),
+(2, 'Aisha', 'Muiz', 'Male', 'F/ND/23/3450051', 'Business Informatics', '2024-11-24 06:19:37');
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indexes for table `academic_years`
+--
+ALTER TABLE `academic_years`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `admins`
@@ -190,14 +233,17 @@ ALTER TABLE `course_registrations`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `unique_registration` (`student_id`,`course_id`),
   ADD KEY `student_id` (`student_id`),
-  ADD KEY `course_id` (`course_id`);
+  ADD KEY `course_id` (`course_id`),
+  ADD KEY `fk_academic_year` (`academic_year_id`),
+  ADD KEY `fk_session` (`session_id`);
 
 --
 -- Indexes for table `overall_results`
 --
 ALTER TABLE `overall_results`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `student_id` (`student_id`);
+  ADD UNIQUE KEY `student_id` (`student_id`),
+  ADD KEY `fk_overall_academic_year` (`academic_year_id`);
 
 --
 -- Indexes for table `results`
@@ -206,7 +252,16 @@ ALTER TABLE `results`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `unique_result` (`student_id`,`course_id`),
   ADD KEY `student_id` (`student_id`),
-  ADD KEY `course_id` (`course_id`);
+  ADD KEY `course_id` (`course_id`),
+  ADD KEY `fk_result_academic_year` (`academic_year_id`),
+  ADD KEY `fk_result_session` (`session_id`);
+
+--
+-- Indexes for table `sessions`
+--
+ALTER TABLE `sessions`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `name` (`name`);
 
 --
 -- Indexes for table `students`
@@ -220,40 +275,52 @@ ALTER TABLE `students`
 --
 
 --
+-- AUTO_INCREMENT for table `academic_years`
+--
+ALTER TABLE `academic_years`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
 -- AUTO_INCREMENT for table `admins`
 --
 ALTER TABLE `admins`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `courses`
 --
 ALTER TABLE `courses`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `course_registrations`
 --
 ALTER TABLE `course_registrations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `overall_results`
 --
 ALTER TABLE `overall_results`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `results`
 --
 ALTER TABLE `results`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `sessions`
+--
+ALTER TABLE `sessions`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `students`
 --
 ALTER TABLE `students`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

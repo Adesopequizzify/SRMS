@@ -29,26 +29,34 @@ try {
     }
 
     // Insert results
-    $stmt = $pdo->prepare("INSERT INTO results (student_id, course_id, score, grade) VALUES (?, ?, ?, ?)");
+    $stmt = $pdo->prepare("INSERT INTO results (student_id, course_id, score, grade, academic_year_id, session_id) VALUES (?, ?, ?, ?, ?, ?)");
     foreach ($results['courses'] as $course) {
-        if (!isset($course['course_id']) || $course['course_id'] === null) {
-            throw new Exception('Invalid course ID');
-        }
-        $stmt->execute([
+        $values = [
             $student['id'],
             $course['course_id'],
             $course['score'],
-            $course['grade']
-        ]);
+            $course['grade'],
+            intval($results['academic_year']),
+            intval($results['session'])
+        ];
+        $stmt->execute($values);
     }
 
-    // Insert overall result
-    $stmt = $pdo->prepare("INSERT INTO overall_results (student_id, gpa, final_remark) VALUES (?, ?, ?)");
-    $stmt->execute([
+    // Insert or update overall result
+    $stmt = $pdo->prepare("
+        INSERT INTO overall_results (student_id, gpa, final_remark, academic_year_id) 
+        VALUES (?, ?, ?, ?) 
+        ON DUPLICATE KEY UPDATE gpa = ?, final_remark = ?
+    ");
+    $values = [
         $student['id'],
         $results['gpa'],
+        $results['final_remark'],
+        intval($results['academic_year']),
+        $results['gpa'],
         $results['final_remark']
-    ]);
+    ];
+    $stmt->execute($values);
 
     $pdo->commit();
     unset($_SESSION['pending_results']);

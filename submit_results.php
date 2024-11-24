@@ -15,11 +15,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $matricNumber = $_POST['matricNumber'];
-$academicYearId = $_POST['academic_year_id'];
-$sessionId = $_POST['session_id'];
-$courses = json_decode($_POST['courses'], true);
+$academicYearId = intval($_POST['academic_year_id']);
+$sessionId = intval($_POST['session_id']);
+$courses = isset($_POST['courses']) ? json_decode($_POST['courses'], true) : [];
 
-if (empty($matricNumber) || empty($academicYearId) || empty($sessionId) || empty($courses)) {
+if (empty($matricNumber) || $academicYearId <= 0 || $sessionId <= 0 || empty($courses)) {
     echo json_encode(['success' => false, 'message' => 'Invalid data submitted']);
     exit;
 }
@@ -35,30 +35,44 @@ try {
         exit;
     }
 
+    // Verify that the academic_year_id exists
+    $stmt = $pdo->prepare("SELECT id, year FROM academic_years WHERE id = ?");
+    $stmt->execute([$academicYearId]);
+    $academicYear = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$academicYear) {
+        throw new Exception("Invalid academic year ID: $academicYearId");
+    }
+
+    // Verify that the session_id exists
+    $stmt = $pdo->prepare("SELECT id, name FROM sessions WHERE id = ?");
+    $stmt->execute([$sessionId]);
+    $session = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$session) {
+        throw new Exception("Invalid session ID: $sessionId");
+    }
+
     $results = [
         'student_name' => $student['first_name'] . ' ' . $student['last_name'],
         'matric_number' => $student['matric_number'],
         'academic_year' => $academicYearId,
+        'academic_year_name' => $academicYear['year'],
         'session' => $sessionId,
+        'session_name' => $session['name'],
         'courses' => []
     ];
 
     $totalGradePoints = 0;
     $totalCourses = 0;
 
-    $pdo->beginTransaction();
-
-    $insertStmt = $pdo->prepare("INSERT INTO results (student_id, course_id, score, grade, academic_year_id, session_id) VALUES (?, ?, ?, ?, ?, ?)");
-
     foreach ($courses as $courseId => $score) {
-        $stmt = $pdo->prepare("SELECT course_name, course_code, grade_thresholds FROM courses WHERE id = ?");
-        $stmt->execute([$courseId]);
-        $course = $stmt->fetch(PDO::FETCH_ASSOC);
+        $courseStmt = $pdo->prepare("SELECT course_name, course_code, grade_thresholds FROM courses WHERE id = ?");
+        $courseStmt->execute([$courseId]);
+        $course = $courseStmt->fetch(PDO::FETCH_ASSOC);
 
         if ($course) {
             $gradeThresholds = json_decode($course['grade_thresholds'], true);
             $grade = calculateGrade($score, $gradeThresholds);
-            $passFail = ($grade !== 'F') ? 'Pass' : 'Fail';
+            $gradePoint = getGradePoint($grade);
 
             $results['courses'][] = [
                 'course_id' => $courseId,
@@ -66,13 +80,11 @@ try {
                 'course_name' => $course['course_name'],
                 'score' => $score,
                 'grade' => $grade,
-                'pass_fail' => $passFail
+                'grade_point' => $gradePoint
             ];
 
-            $totalGradePoints += getGradePoint($grade);
+            $totalGradePoints += $gradePoint;
             $totalCourses++;
-
-            $insertStmt->execute([$student['id'], $courseId, $score, $grade, $academicYearId, $sessionId]);
         }
     }
 
@@ -80,21 +92,14 @@ try {
     $results['gpa'] = $gpa;
     $results['final_remark'] = getFinalRemark($gpa);
 
-    // Insert or update overall result
-    $overallStmt = $pdo->prepare("INSERT INTO overall_results (student_id, gpa, final_remark, academic_year_id) 
-                                  VALUES (?, ?, ?, ?) 
-                                  ON DUPLICATE KEY UPDATE gpa = ?, final_remark = ?");
-    $overallStmt->execute([$student['id'], $gpa, $results['final_remark'], $academicYearId, $gpa, $results['final_remark']]);
-
-    $pdo->commit();
-
     // Store results in session for confirmation
     $_SESSION['pending_results'] = $results;
 
     echo json_encode(['success' => true, 'results' => $results]);
 } catch (PDOException $e) {
-    $pdo->rollBack();
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $e->getMessage()]);
+} catch (Exception $e) {
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 
 function calculateGrade($score, $gradeThresholds) {
@@ -107,14 +112,15 @@ function calculateGrade($score, $gradeThresholds) {
 }
 
 function getGradePoint($grade) {
-    $gradePoints = ['A' => 5, 'B' => 4, 'C' => 3, 'D' => 2, 'E' => 1, 'F' => 0];
+    $gradePoints = ['A' => 4.0, 'B' => 3.5, 'C' => 3.0, 'D' => 2.5, 'E' => 2.0, 'F' => 0];
     return isset($gradePoints[$grade]) ? $gradePoints[$grade] : 0;
 }
 
 function getFinalRemark($gpa) {
-    if ($gpa >= 4.5) return 'First Class';
-    if ($gpa >= 3.5) return 'Second Class Upper';
-    if ($gpa >= 2.5) return 'Second Class Lower';
-    if ($gpa >= 1.5) return 'Third Class';
+    if ($gpa >= 3.5) return 'Distinction';
+    if ($gpa >= 3.0) return 'Upper Credit';
+    if ($gpa >= 2.5) return 'Lower Credit';
+    if ($gpa >= 2.0) return 'Pass';
     return 'Fail';
 }
+
